@@ -35,7 +35,10 @@ describe('RISC-V Assembler', () => {
     });
 
     it('should correctly handle branch instruction offset', () => {
-      expect(parseImmediate('2', 13)).toBe(1); // 2字节对齐，除以2
+      // Offsets should remain as byte offsets (not divided by 2)
+      // The machine code generation handles bit extraction correctly
+      expect(parseImmediate('2', 13)).toBe(2); // 2-byte aligned, kept as-is
+      expect(parseImmediate('-4', 13)).toBe(-4); // negative offset, kept as-is
       expect(() => parseImmediate('3', 13)).toThrow('Branch/jump target must be 2-byte aligned');
     });
 

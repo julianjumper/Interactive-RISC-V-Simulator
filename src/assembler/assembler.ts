@@ -162,7 +162,8 @@ export const parseImmediate = (imm: string, bits: number, labelMap?: Record<stri
     });
   }
 
-  // Special handling for branch offset
+  // Special handling for branch offset - just validate alignment
+  // The machine code generation handles bit extraction correctly from byte offsets
   if (bits === 13 || bits === 21) {
     if (value % 2 !== 0) {
       throw new AssemblerError(`Branch/jump target must be 2-byte aligned: ${imm}`, {
@@ -170,7 +171,9 @@ export const parseImmediate = (imm: string, bits: number, labelMap?: Record<stri
         suggestion: 'Branch and jump instruction targets must be multiples of 2'
       });
     }
-    value = value >> 1; // Convert byte offset to word offset
+    // Note: We keep the byte offset as-is. The machine code generation extracts
+    // bits [12:1] for B-type or [20:1] for J-type, which correctly handles
+    // the fact that bit 0 is always 0 for aligned addresses.
   }
 
   if (value < min || value > max) {
