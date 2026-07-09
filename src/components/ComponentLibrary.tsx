@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Cpu,
   Database,
@@ -19,162 +19,171 @@ import {
   FlaskConical,
   Download,
   Upload,
-  FolderOpen
-} from 'lucide-react';
-import { useCircuitStore } from '../store/circuitStore';
+  FolderOpen,
+} from "lucide-react";
+import { useCircuitStore } from "../store/circuitStore";
 
 const components = [
-
-
   {
-    type: 'constant',
-    label: 'Constant',
+    type: "constant",
+    label: "Constant",
     icon: <HashIcon className="w-6 h-6" />,
-    description: 'Constant Output Component',
+    description: "Constant Output Component",
   },
   {
-    type: 'pc',
-    label: 'Program Counter',
+    type: "pc",
+    label: "Program Counter",
     icon: <Timer className="w-6 h-6" />,
-    description: 'Program Counter',
+    description: "Program Counter",
   },
   {
-    type: 'fork',
-    label: 'Fork',
+    type: "fork",
+    label: "Fork",
     icon: <GitBranch className="w-6 h-6" />,
-    description: 'Signal Fork Component',
+    description: "Signal Fork Component",
   },
   {
-    type: 'pipeline-register',
-    label: 'Pipeline Register',
+    type: "pipeline-register",
+    label: "Pipeline Register",
     icon: <Database className="w-6 h-6" />,
-    description: 'Pipeline Register Component',
+    description: "Pipeline Register Component",
   },
   {
-    type: 'jump-control',
-    label: 'Jump Control',
+    type: "jump-control",
+    label: "Jump Control",
     icon: <GitBranch className="w-6 h-6" />,
-    description: 'Jump Control Unit',
+    description: "Jump Control Unit",
   },
   {
-    type: 'add',
-    label: 'Add',
+    type: "add",
+    label: "Add",
     icon: <Plus className="w-6 h-6" />,
-    description: 'Adder Component',
+    description: "Adder Component",
   },
   {
-    type: 'instr-distributer',
-    label: 'Instruction Distributer',
+    type: "instr-distributer",
+    label: "Instruction Distributer",
     icon: <FileInput className="w-6 h-6" />,
-    description: 'Instruction Distributor Component',
+    description: "Instruction Distributor Component",
   },
   {
-    type: 'instruction-memory',
-    label: 'Instruction Memory',
+    type: "instruction-memory",
+    label: "Instruction Memory",
     icon: <BookOpen className="w-6 h-6" />,
-    description: 'Stores program instructions',
+    description: "Stores program instructions",
   },
   {
-    type: 'alu',
-    label: 'ALU',
+    type: "alu",
+    label: "ALU",
     icon: <GitCompare className="w-6 h-6" />,
-    description: 'Arithmetic Logic Unit',
+    description: "Arithmetic Logic Unit",
   },
   {
-    type: 'alu-control',
-    label: 'ALU Control',
+    type: "alu-control",
+    label: "ALU Control",
     icon: <Cpu className="w-6 h-6" />,
-    description: 'ALU Control Unit',
+    description: "ALU Control Unit",
   },
   {
-    type: 'register',
-    label: '32-bit Register',
+    type: "register",
+    label: "32-bit Register",
     icon: <Database className="w-6 h-6" />,
-    description: '32-bit Register',
+    description: "32-bit Register",
   },
   {
-    type: 'mux',
-    label: 'Multiplexer',
+    type: "mux",
+    label: "Multiplexer",
     icon: <ArrowRightLeft className="w-6 h-6" />,
-    description: 'Multiplexer',
+    description: "Multiplexer",
   },
   {
-    type: 'imm-gen',
-    label: 'Immediate Gen',
+    type: "imm-gen",
+    label: "Immediate Gen",
     icon: <Hash className="w-6 h-6" />,
-    description: 'Immediate Generator',
+    description: "Immediate Generator",
   },
   {
-    type: 'control',
-    label: 'Control Unit',
+    type: "control",
+    label: "Control Unit",
     icon: <Cpu className="w-6 h-6" />,
-    description: 'Main Control Unit',
+    description: "Main Control Unit",
   },
   {
-    type: 'memory',
-    label: 'Data Memory',
+    type: "memory",
+    label: "Data Memory",
     icon: <Database className="w-6 h-6" />,
-    description: 'Data Memory Unit',
+    description: "Data Memory Unit",
   },
   {
-    type: 'label',
-    label: 'Label',
+    type: "label",
+    label: "Label",
     icon: <Tag className="w-6 h-6" />,
-    description: 'Label Display Component',
+    description: "Label Display Component",
   },
   {
-    type: 'single-register',
-    label: 'Single Register',
+    type: "single-register",
+    label: "Single Register",
     icon: <Database className="w-6 h-6" />,
-    description: 'Single Register Component',
+    description: "Single Register Component",
   },
   {
-    type: 'forwarding-unit',
-    label: 'Forwarding Unit',
+    type: "forwarding-unit",
+    label: "Forwarding Unit",
     icon: <ArrowLeftRight className="w-6 h-6" />,
-    description: 'Data Forwarding Unit for Pipeline Hazard Control',
+    description: "Data Forwarding Unit for Pipeline Hazard Control",
   },
   {
-    type: 'hazard-detection-unit',
-    label: 'Hazard Detection Unit',
+    type: "hazard-detection-unit",
+    label: "Hazard Detection Unit",
     icon: <AlertTriangle className="w-6 h-6" />,
-    description: 'Detects and resolves pipeline hazards by stalling',
+    description: "Detects and resolves pipeline hazards by stalling",
   },
   {
-    type: 'branch-hazard-unit',
-    label: 'Branch Hazard Unit',
+    type: "branch-hazard-unit",
+    label: "Branch Hazard Unit",
     icon: <FlaskConical className="w-6 h-6" />,
-    description: 'Resolves control hazards by flushing the pipeline',
-  }
+    description: "Resolves control hazards by flushing the pipeline",
+  },
 ];
 
 export function ComponentLibrary() {
   const [showAssemblyResult, setShowAssemblyResult] = React.useState(false);
   const saveCircuit = useCircuitStore((state) => state.saveCircuit);
   const loadCircuit = useCircuitStore((state) => state.loadCircuit);
-  const assembledInstructions = useCircuitStore((state) => state.assembledInstructions);
-  const currentInstructionIndex = useCircuitStore((state) => state.currentInstructionIndex);
+  const assembledInstructions = useCircuitStore(
+    (state) => state.assembledInstructions,
+  );
+  const currentInstructionIndex = useCircuitStore(
+    (state) => state.currentInstructionIndex,
+  );
 
   const onDragStart = (event: React.DragEvent, type: string) => {
-    event.dataTransfer.setData('application/reactflow', type);
-    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData("application/reactflow", type);
+    event.dataTransfer.effectAllowed = "move";
   };
 
   const handleSave = async () => {
     try {
       // 检查浏览器是否支持 File System Access API
-      if ('showSaveFilePicker' in window) {
-        const handle = await (window as unknown as {
-          showSaveFilePicker: (options: {
-            suggestedName: string;
-            types: { description: string; accept: { [key: string]: string[] } }[]
-          }) => Promise<FileSystemFileHandle>
-        }).showSaveFilePicker({
-          suggestedName: `circuit-${new Date().toISOString().replace(/[:.]/g, '-')}.json`,
-          types: [{
-            description: 'JSON Files',
-            accept: { 'application/json': ['.json'] }
-          }]
+      if ("showSaveFilePicker" in window) {
+        const handle = await (
+          window as unknown as {
+            showSaveFilePicker: (options: {
+              suggestedName: string;
+              types: {
+                description: string;
+                accept: { [key: string]: string[] };
+              }[];
+            }) => Promise<FileSystemFileHandle>;
+          }
+        ).showSaveFilePicker({
+          suggestedName: `circuit-${new Date().toISOString().replace(/[:.]/g, "-")}.json`,
+          types: [
+            {
+              description: "JSON Files",
+              accept: { "application/json": [".json"] },
+            },
+          ],
         });
         const data = saveCircuit();
         const writable = await handle.createWritable();
@@ -183,18 +192,18 @@ export function ComponentLibrary() {
       } else {
         // 如果 showSaveFilePicker 不支持，使用传统下载方式
         const data = saveCircuit();
-        const blob = new Blob([data], { type: 'application/json' });
+        const blob = new Blob([data], { type: "application/json" });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
-        a.download = `circuit-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+        a.download = `circuit-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
         a.click();
         URL.revokeObjectURL(url);
       }
     } catch (err: unknown) {
       // 使用类型守卫处理错误
-      if (err instanceof Error && err.name !== 'AbortError') {
-        console.error('保存文件失败:', err);
+      if (err instanceof Error && err.name !== "AbortError") {
+        console.error("保存文件失败:", err);
       }
     }
   };
@@ -205,7 +214,7 @@ export function ComponentLibrary() {
       const reader = new FileReader();
       reader.onload = (e) => {
         const content = e.target?.result;
-        if (typeof content === 'string') {
+        if (typeof content === "string") {
           loadCircuit(content);
         }
       };
@@ -217,12 +226,16 @@ export function ComponentLibrary() {
     <div className="flex flex-col h-full">
       <div className="bg-white p-4 rounded-lg shadow-md mb-4">
         <div className="flex justify-between items-center mb-3">
-          <h2 className="text-lg font-semibold tracking-tight text-gray-800">Components</h2>
+          <h2 className="text-lg font-semibold tracking-tight text-gray-800">
+            Components
+          </h2>
           <button
             type="button"
             onClick={() => setShowAssemblyResult(!showAssemblyResult)}
             className="p-1.5 rounded-md hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-            title={showAssemblyResult ? "Show Components" : "Show Assembly Result"}
+            title={
+              showAssemblyResult ? "Show Components" : "Show Assembly Result"
+            }
           >
             <SplitSquareHorizontal className="w-4 h-4 text-gray-600" />
           </button>
@@ -259,20 +272,22 @@ export function ComponentLibrary() {
                 <select
                   onChange={(e) => {
                     const selectedExample = e.target.value;
-                    if (selectedExample === '') return;
+                    if (selectedExample === "") return;
 
-                    if (selectedExample === 'empty-datapath') {
+                    if (selectedExample === "empty-datapath") {
                       loadCircuit(JSON.stringify({ nodes: [], edges: [] }));
                       return;
                     }
 
-                    fetch(`/datapath/${selectedExample}.json`)
-                      .then(response => response.json())
-                      .then(data => {
+                    fetch(
+                      `${import.meta.env.BASE_URL}datapath/${selectedExample}.json`,
+                    )
+                      .then((response) => response.json())
+                      .then((data) => {
                         loadCircuit(JSON.stringify(data));
                       })
-                      .catch(err => {
-                        console.error('Failed to load example:', err);
+                      .catch((err) => {
+                        console.error("Failed to load example:", err);
                       });
                   }}
                   className="h-full w-[100px] pl-6 pr-6 py-1 text-xs font-medium bg-blue-100 text-blue-800 border border-blue-300 border-l-0 hover:bg-blue-200 transition-colors appearance-none cursor-pointer rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
@@ -284,14 +299,26 @@ export function ComponentLibrary() {
                   <option value="basic-datapath">Single Cycle</option>
                   <option value="basic-pipeline">Pipeline</option>
                   {/* <option value="pipeline-hazard">Pipeline Hazard</option> */}
-                  <option value="pipeline-forward">Pipeline with Hazard Control</option>
+                  <option value="pipeline-forward">
+                    Pipeline with Hazard Control
+                  </option>
                 </select>
                 <div className="absolute left-1.5 top-1/2 transform -translate-y-1/2 pointer-events-none">
                   <FolderOpen className="w-3 h-3 text-blue-700" />
                 </div>
                 <div className="absolute right-1.5 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                  <svg className="w-3 h-3 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <svg
+                    className="w-3 h-3 text-blue-700"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </div>
               </div>
@@ -304,14 +331,23 @@ export function ComponentLibrary() {
               {assembledInstructions.map((inst, i) => (
                 <div
                   key={i}
-                  ref={i === currentInstructionIndex ? (el) => {
-                    if (el) {
-                      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                  } : undefined}
-                  className={`p-2.5 rounded-md ${i === currentInstructionIndex ? 'bg-yellow-50 border border-yellow-200' : 'bg-gray-50 hover:bg-gray-100 transition-colors'}`}
+                  ref={
+                    i === currentInstructionIndex
+                      ? (el) => {
+                          if (el) {
+                            el.scrollIntoView({
+                              behavior: "smooth",
+                              block: "center",
+                            });
+                          }
+                        }
+                      : undefined
+                  }
+                  className={`p-2.5 rounded-md ${i === currentInstructionIndex ? "bg-yellow-50 border border-yellow-200" : "bg-gray-50 hover:bg-gray-100 transition-colors"}`}
                 >
-                  <div className="font-mono text-sm text-gray-700">{inst.assembly}</div>
+                  <div className="font-mono text-sm text-gray-700">
+                    {inst.assembly}
+                  </div>
                 </div>
               ))}
             </div>
@@ -324,7 +360,9 @@ export function ComponentLibrary() {
                 onDragStart={(e) => onDragStart(e, component.type)}
               >
                 <div className="text-gray-600">{component.icon}</div>
-                <span className="ml-2.5 font-medium text-gray-700">{component.label}</span>
+                <span className="ml-2.5 font-medium text-gray-700">
+                  {component.label}
+                </span>
               </div>
             ))
           )}
