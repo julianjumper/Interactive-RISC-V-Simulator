@@ -1,9 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
-import { useCircuitStore } from '../store/circuitStore';
-import { Assembler, expandPseudoInstruction, AssemblerError, AssembledInstruction } from '../assembler/assembler';
-import Editor, { useMonaco } from '@monaco-editor/react';
-import { Table } from 'lucide-react';
-import { SymbolTable } from './SymbolTable';
+import { useState, useEffect, useRef } from "react";
+import { useCircuitStore } from "../store/circuitStore";
+import {
+  Assembler,
+  expandPseudoInstruction,
+  AssemblerError,
+  AssembledInstruction,
+} from "../assembler/assembler";
+import Editor, { useMonaco } from "@monaco-editor/react";
+import { Table } from "lucide-react";
+import { SymbolTable } from "./SymbolTable";
 
 // 扩展AssembledInstruction类型，确保包含originalLineNumber
 type ExtendedAssembledInstruction = AssembledInstruction & {
@@ -23,11 +28,17 @@ export function AssemblyEditor() {
   // 使用store中的状态
   const editorCode = useCircuitStore((state) => state.editorCode);
   const setEditorCode = useCircuitStore((state) => state.setEditorCode);
-  const assembledInstructions = useCircuitStore((state) => state.assembledInstructions) as ExtendedAssembledInstruction[];
-  const setAssembledInstructions = useCircuitStore((state) => state.setAssembledInstructions);
+  const assembledInstructions = useCircuitStore(
+    (state) => state.assembledInstructions,
+  ) as ExtendedAssembledInstruction[];
+  const setAssembledInstructions = useCircuitStore(
+    (state) => state.setAssembledInstructions,
+  );
   const updateNodeData = useCircuitStore((state) => state.updateNodeData);
   const nodes = useCircuitStore((state) => state.nodes);
-  const currentInstructionIndex = useCircuitStore((state) => state.currentInstructionIndex);
+  const currentInstructionIndex = useCircuitStore(
+    (state) => state.currentInstructionIndex,
+  );
   const isSimulating = useCircuitStore((state) => state.isSimulating);
   const stepCount = useCircuitStore((state) => state.stepCount);
 
@@ -35,12 +46,12 @@ export function AssemblyEditor() {
   useEffect(() => {
     if (monaco) {
       // 注册RISC-V汇编语言
-      monaco.languages.register({ id: 'riscv' });
+      monaco.languages.register({ id: "riscv" });
 
       // 定义RISC-V汇编语言的token提供者
-      monaco.languages.setMonarchTokensProvider('riscv', {
+      monaco.languages.setMonarchTokensProvider("riscv", {
         // 设置默认令牌类型
-        defaultToken: 'invalid',
+        defaultToken: "invalid",
 
         // 大小写不敏感
         ignoreCase: true,
@@ -49,68 +60,80 @@ export function AssemblyEditor() {
         tokenizer: {
           root: [
             // 注释 - Must be first to have highest priority
-            [/#.*$/, 'comment'],
+            [/#.*$/, "comment"],
 
             // 寄存器 - Improve pattern to properly match double-digit registers
-            [/\b(x[0-9]|x[1-2][0-9]|x3[0-1]|zero|ra|sp|gp|tp|t[0-6]|s[0-9]|s1[0-1]|a[0-7])\b/, 'register'],
+            [
+              /\b(x[0-9]|x[1-2][0-9]|x3[0-1]|zero|ra|sp|gp|tp|t[0-6]|s[0-9]|s1[0-1]|a[0-7])\b/,
+              "register",
+            ],
 
             // 标签定义 (修改为仅匹配以冒号结尾的标签，允许点号)
-            [/[a-zA-Z0-9_\.]+:/, 'label'],
+            [/[a-zA-Z0-9_\.]+:/, "label"],
 
             // 段定义
-            [/\.(text|data|section|global|align|byte|half|word|dword|float|double|ascii|asciz|string|space|zero|equ)/, 'directive'],
+            [
+              /\.(text|data|section|global|align|byte|half|word|dword|float|double|ascii|asciz|string|space|zero|equ)/,
+              "directive",
+            ],
 
             // 基本指令
-            [/\b(add|sub|and|or|xor|sll|srl|sra|slt|sltu|addi|andi|ori|xori|slli|srli|srai|slti|sltiu|lb|lh|lw|ld|lbu|lhu|lwu|sb|sh|sw|sd|beq|bne|blt|bge|bltu|bgeu|jal|jalr|lui|auipc|ecall|ebreak)\b/, 'keyword'],
+            [
+              /\b(add|sub|and|or|xor|sll|srl|sra|slt|sltu|addi|andi|ori|xori|slli|srli|srai|slti|sltiu|lb|lh|lw|ld|lbu|lhu|lwu|sb|sh|sw|sd|beq|bne|blt|bge|bltu|bgeu|jal|jalr|lui|auipc|ecall|ebreak)\b/,
+              "keyword",
+            ],
 
             // 伪指令
-            [/\b(li|la|mv|not|neg|seqz|snez|sltz|sgtz|j|jal|jr|jalr|call|ret|tail|beqz|bnez|blez|bgez|bltz|bgtz|bgt|ble|bgtu|bleu|nop)\b/, 'keyword.pseudo'],
+            [
+              /\b(li|la|mv|not|neg|seqz|snez|sltz|sgtz|j|jal|jr|jalr|call|ret|tail|beqz|bnez|blez|bgez|bltz|bgtz|bgt|ble|bgtu|bleu|nop)\b/,
+              "keyword.pseudo",
+            ],
 
             // 数字（十六进制）- Move before decimal numbers
-            [/0x[0-9a-fA-F]+/, 'number.hex'],
+            [/0x[0-9a-fA-F]+/, "number.hex"],
 
             // 数字（十进制）- Updated to include negative numbers
-            [/-?[0-9]+\b/, 'number'],
+            [/-?[0-9]+\b/, "number"],
 
             // %hi and %lo relocation operators (allow dots in label names)
-            [/%hi\([a-zA-Z0-9_\.]+\)/, 'relocation'],
-            [/%lo\([a-zA-Z0-9_\.]+\)/, 'relocation'],
+            [/%hi\([a-zA-Z0-9_\.]+\)/, "relocation"],
+            [/%lo\([a-zA-Z0-9_\.]+\)/, "relocation"],
 
             // 变量和标签引用 (新增规则匹配变量引用，允许点号)
-            [/\b[a-zA-Z][a-zA-Z0-9_\.]*\b/, 'identifier'],
+            [/\b[a-zA-Z][a-zA-Z0-9_\.]*\b/, "identifier"],
 
             // 字符串
-            [/".*?"/, 'string'],
+            [/".*?"/, "string"],
 
             // 分隔符
-            [/[,()]/, 'delimiter'],
+            [/[,()]/, "delimiter"],
           ],
         },
       });
 
       // 定义编辑器主题
-      monaco.editor.defineTheme('riscv-theme', {
-        base: 'vs',
+      monaco.editor.defineTheme("riscv-theme", {
+        base: "vs",
         inherit: true,
         rules: [
-          { token: 'comment', foreground: '777777', fontStyle: 'italic' },
-          { token: 'label', foreground: '0000ff', fontStyle: 'bold' },
-          { token: 'directive', foreground: '800080', fontStyle: 'bold' },
-          { token: 'register', foreground: '000000' },
-          { token: 'keyword', foreground: 'A52A2A', fontStyle: 'bold' },
-          { token: 'keyword.pseudo', foreground: 'B8860B' },
-          { token: 'identifier', foreground: '0000ff' }, // 变量名与标签颜色一致
-          { token: 'relocation', foreground: 'D2691E', fontStyle: 'bold' }, // %hi and %lo operators
-          { token: 'number.hex', foreground: '008000' },
-          { token: 'number', foreground: '008000' },
-          { token: 'string', foreground: 'ff0000' },
-          { token: 'delimiter', foreground: '000000' },
+          { token: "comment", foreground: "777777", fontStyle: "italic" },
+          { token: "label", foreground: "0000ff", fontStyle: "bold" },
+          { token: "directive", foreground: "800080", fontStyle: "bold" },
+          { token: "register", foreground: "000000" },
+          { token: "keyword", foreground: "A52A2A", fontStyle: "bold" },
+          { token: "keyword.pseudo", foreground: "B8860B" },
+          { token: "identifier", foreground: "0000ff" }, // 变量名与标签颜色一致
+          { token: "relocation", foreground: "D2691E", fontStyle: "bold" }, // %hi and %lo operators
+          { token: "number.hex", foreground: "008000" },
+          { token: "number", foreground: "008000" },
+          { token: "string", foreground: "ff0000" },
+          { token: "delimiter", foreground: "000000" },
         ],
         colors: {
-          'editor.foreground': '#000000',
-          'editor.background': '#FFFFFF',
-          'editor.lineHighlightBackground': '#F0F0F0',
-        }
+          "editor.foreground": "#000000",
+          "editor.background": "#FFFFFF",
+          "editor.lineHighlightBackground": "#F0F0F0",
+        },
       });
     }
   }, [monaco]);
@@ -122,22 +145,27 @@ export function AssemblyEditor() {
 
   // 映射指令索引到源代码行号
   const getSourceLineFromInstructionIndex = (index: number) => {
-    if (!editorCode || index === null || index < 0 || index >= assembledInstructions.length) {
+    if (
+      !editorCode ||
+      index === null ||
+      index < 0 ||
+      index >= assembledInstructions.length
+    ) {
       return -1;
     }
 
-    const sourceLines = editorCode.split('\n');
+    const sourceLines = editorCode.split("\n");
     let currentInstructionCount = 0;
     let inDataSegment = false; // 跟踪是否在数据段中
 
     for (let i = 0; i < sourceLines.length; i++) {
-      const line = sourceLines[i].split('#')[0].trim();
+      const line = sourceLines[i].split("#")[0].trim();
 
       // 检查段标识符
-      if (line === '.data') {
+      if (line === ".data") {
         inDataSegment = true;
         continue;
-      } else if (line === '.text') {
+      } else if (line === ".text") {
         inDataSegment = false;
         continue;
       }
@@ -148,7 +176,7 @@ export function AssemblyEditor() {
       }
 
       // 跳过空行、注释行和标签行
-      if (line && !line.endsWith(':')) {
+      if (line && !line.endsWith(":")) {
         // 获取当前行展开后的指令数量
         const expandedInsts = expandPseudoInstruction(line);
         currentInstructionCount += expandedInsts.length;
@@ -166,7 +194,11 @@ export function AssemblyEditor() {
   // 监听指令索引变化，自动滚动到高亮行
   useEffect(() => {
     // 表格部分的高亮滚动
-    if (tableBodyRef.current && currentInstructionIndex !== null && currentInstructionIndex >= 0) {
+    if (
+      tableBodyRef.current &&
+      currentInstructionIndex !== null &&
+      currentInstructionIndex >= 0
+    ) {
       // 找到当前PC对应的行
       const currentPC = currentInstructionIndex * 4;
 
@@ -176,12 +208,17 @@ export function AssemblyEditor() {
 
       // 如果通过ID找不到，则尝试通过地址查找
       if (!highlightedRow && tableBodyRef.current) {
-        const rows = tableBodyRef.current.querySelectorAll('tr');
+        const rows = tableBodyRef.current.querySelectorAll("tr");
 
         // 查找包含当前PC地址的行
         for (const row of rows) {
-          const firstCell = row.querySelector('td:first-child');
-          if (firstCell && firstCell.textContent?.includes(`0x${currentPC.toString(16).padStart(8, '0')}`)) {
+          const firstCell = row.querySelector("td:first-child");
+          if (
+            firstCell &&
+            firstCell.textContent?.includes(
+              `0x${currentPC.toString(16).padStart(8, "0")}`,
+            )
+          ) {
             highlightedRow = row;
             break;
           }
@@ -190,9 +227,10 @@ export function AssemblyEditor() {
 
       // 如果仍然找不到，则找已高亮的行
       if (!highlightedRow && tableBodyRef.current) {
-        const highlightedElement = tableBodyRef.current.querySelector('.bg-yellow-50');
+        const highlightedElement =
+          tableBodyRef.current.querySelector(".bg-yellow-50");
         if (highlightedElement) {
-          highlightedRow = highlightedElement.closest('tr');
+          highlightedRow = highlightedElement.closest("tr");
         }
       }
 
@@ -204,17 +242,20 @@ export function AssemblyEditor() {
         const rowRect = highlightedRow.getBoundingClientRect();
 
         // 检查元素是否完全在视图中
-        const isInView = (
+        const isInView =
           rowRect.top >= containerRect.top &&
-          rowRect.bottom <= containerRect.bottom
-        );
+          rowRect.bottom <= containerRect.bottom;
 
         // 只有当元素不在视图中时才滚动
         if (!isInView) {
           // 使用更快的滚动方式，在高速模式下更可靠
           highlightedRow.scrollIntoView({
-            behavior: isSimulating && useCircuitStore.getState().simulationInterval < 200 ? 'auto' : 'smooth',
-            block: 'center'
+            behavior:
+              isSimulating &&
+              useCircuitStore.getState().simulationInterval < 200
+                ? "auto"
+                : "smooth",
+            block: "center",
           });
         }
       }
@@ -227,9 +268,16 @@ export function AssemblyEditor() {
       const currentModel = editorRef.current.getModel();
       if (currentModel) {
         // 清除所有现有的装饰，包括可能由其他来源添加的装饰
-        const oldDecorations = editorRef.current.getModel().getAllDecorations()
-          .filter((d: { options: { className?: string; glyphMarginClassName?: string } }) =>
-            d.options.className === 'monaco-highlight-line' || d.options.glyphMarginClassName === 'monaco-highlight-glyph')
+        const oldDecorations = editorRef.current
+          .getModel()
+          .getAllDecorations()
+          .filter(
+            (d: {
+              options: { className?: string; glyphMarginClassName?: string };
+            }) =>
+              d.options.className === "monaco-highlight-line" ||
+              d.options.glyphMarginClassName === "monaco-highlight-glyph",
+          )
           .map((d: { id: string }) => d.id);
 
         if (oldDecorations.length > 0) {
@@ -245,37 +293,54 @@ export function AssemblyEditor() {
 
       // 如果有有效的指令索引，无论是否在模拟状态下，都添加高亮
       // 这样在单步执行时也能正确高亮
-      if (currentInstructionIndex !== null && currentInstructionIndex >= 0 && assembledInstructions.length > 0) {
+      if (
+        currentInstructionIndex !== null &&
+        currentInstructionIndex >= 0 &&
+        assembledInstructions.length > 0
+      ) {
         // 首先尝试使用指令中的原始行号
-        const currentInstruction = assembledInstructions[currentInstructionIndex];
-        if (currentInstruction && currentInstruction.originalLineNumber && currentInstruction.originalLineNumber > 0) {
+        const currentInstruction =
+          assembledInstructions[currentInstructionIndex];
+        if (
+          currentInstruction &&
+          currentInstruction.originalLineNumber &&
+          currentInstruction.originalLineNumber > 0
+        ) {
           // 直接使用汇编器提供的原始行号
           const sourceLine = currentInstruction.originalLineNumber - 1; // 转为0索引
-          const newDecorations = editorRef.current.deltaDecorations([], [
-            {
-              range: new monaco.Range(sourceLine + 1, 1, sourceLine + 1, 1),
-              options: {
-                isWholeLine: true,
-                className: 'monaco-highlight-line',
-                glyphMarginClassName: 'monaco-highlight-glyph'
-              }
-            }
-          ]);
-          setDecorations(newDecorations);
-        } else {
-          // 回退到使用指令索引映射
-          const sourceLine = getSourceLineFromInstructionIndex(currentInstructionIndex);
-          if (sourceLine >= 0) {
-            const newDecorations = editorRef.current.deltaDecorations([], [
+          const newDecorations = editorRef.current.deltaDecorations(
+            [],
+            [
               {
                 range: new monaco.Range(sourceLine + 1, 1, sourceLine + 1, 1),
                 options: {
                   isWholeLine: true,
-                  className: 'monaco-highlight-line',
-                  glyphMarginClassName: 'monaco-highlight-glyph'
-                }
-              }
-            ]);
+                  className: "monaco-highlight-line",
+                  glyphMarginClassName: "monaco-highlight-glyph",
+                },
+              },
+            ],
+          );
+          setDecorations(newDecorations);
+        } else {
+          // 回退到使用指令索引映射
+          const sourceLine = getSourceLineFromInstructionIndex(
+            currentInstructionIndex,
+          );
+          if (sourceLine >= 0) {
+            const newDecorations = editorRef.current.deltaDecorations(
+              [],
+              [
+                {
+                  range: new monaco.Range(sourceLine + 1, 1, sourceLine + 1, 1),
+                  options: {
+                    isWholeLine: true,
+                    className: "monaco-highlight-line",
+                    glyphMarginClassName: "monaco-highlight-glyph",
+                  },
+                },
+              ],
+            );
             setDecorations(newDecorations);
           }
         }
@@ -287,7 +352,7 @@ export function AssemblyEditor() {
   useEffect(() => {
     if (monaco) {
       // 添加自定义CSS样式
-      const styleElement = document.createElement('style');
+      const styleElement = document.createElement("style");
       styleElement.textContent = `
         .monaco-highlight-line {
           background-color: rgba(255, 255, 0, 0.2) !important;
@@ -324,9 +389,16 @@ export function AssemblyEditor() {
         const currentModel = editorRef.current.getModel();
         if (currentModel) {
           // 清除所有现有的装饰，包括可能由其他来源添加的装饰
-          const oldDecorations = editorRef.current.getModel().getAllDecorations()
-            .filter((d: { options: { className?: string; glyphMarginClassName?: string } }) =>
-              d.options.className === 'monaco-highlight-line' || d.options.glyphMarginClassName === 'monaco-highlight-glyph')
+          const oldDecorations = editorRef.current
+            .getModel()
+            .getAllDecorations()
+            .filter(
+              (d: {
+                options: { className?: string; glyphMarginClassName?: string };
+              }) =>
+                d.options.className === "monaco-highlight-line" ||
+                d.options.glyphMarginClassName === "monaco-highlight-glyph",
+            )
             .map((d: { id: string }) => d.id);
 
           if (oldDecorations.length > 0) {
@@ -345,13 +417,22 @@ export function AssemblyEditor() {
 
   // Add an effect to highlight the error line
   useEffect(() => {
-    if (errorLineNumber !== null && errorLineNumber > 0 && editorRef.current && monaco) {
+    if (
+      errorLineNumber !== null &&
+      errorLineNumber > 0 &&
+      editorRef.current &&
+      monaco
+    ) {
       const currentModel = editorRef.current.getModel();
       if (currentModel) {
         // Clear any existing decorations first
-        const oldDecorations = editorRef.current.getModel().getAllDecorations()
-          .filter((d: { options: { className?: string; } }) =>
-            d.options.className === 'monaco-error-line')
+        const oldDecorations = editorRef.current
+          .getModel()
+          .getAllDecorations()
+          .filter(
+            (d: { options: { className?: string } }) =>
+              d.options.className === "monaco-error-line",
+          )
           .map((d: { id: string }) => d.id);
 
         if (oldDecorations.length > 0) {
@@ -359,16 +440,19 @@ export function AssemblyEditor() {
         }
 
         // Add the error decoration
-        const newDecorations = editorRef.current.deltaDecorations([], [
-          {
-            range: new monaco.Range(errorLineNumber, 1, errorLineNumber, 1),
-            options: {
-              isWholeLine: true,
-              className: 'monaco-error-line',
-              glyphMarginClassName: 'monaco-error-glyph'
-            }
-          }
-        ]);
+        const newDecorations = editorRef.current.deltaDecorations(
+          [],
+          [
+            {
+              range: new monaco.Range(errorLineNumber, 1, errorLineNumber, 1),
+              options: {
+                isWholeLine: true,
+                className: "monaco-error-line",
+                glyphMarginClassName: "monaco-error-glyph",
+              },
+            },
+          ],
+        );
 
         // Reveal the error line in the editor
         editorRef.current.revealLineInCenter(errorLineNumber);
@@ -377,9 +461,13 @@ export function AssemblyEditor() {
       // Clear error decorations when there's no error
       const currentModel = editorRef.current.getModel();
       if (currentModel) {
-        const oldDecorations = editorRef.current.getModel().getAllDecorations()
-          .filter((d: { options: { className?: string; } }) =>
-            d.options.className === 'monaco-error-line')
+        const oldDecorations = editorRef.current
+          .getModel()
+          .getAllDecorations()
+          .filter(
+            (d: { options: { className?: string } }) =>
+              d.options.className === "monaco-error-line",
+          )
           .map((d: { id: string }) => d.id);
 
         if (oldDecorations.length > 0) {
@@ -411,7 +499,7 @@ export function AssemblyEditor() {
         // 增加延迟确保内存数据写入在模拟开始之前完成
         setTimeout(() => {
           // 先清空内存，然后设置新的内存数据
-          useCircuitStore.getState().clearMemory();  // 使用新的clearMemory函数
+          useCircuitStore.getState().clearMemory(); // 使用新的clearMemory函数
           setTimeout(() => {
             // 然后设置新的数据段内存
             useCircuitStore.getState().updateMemory(memoryData);
@@ -424,7 +512,9 @@ export function AssemblyEditor() {
       }
 
       // 过滤掉数据段指令，只保留文本段指令
-      const textInstructions = instructions.filter(inst => inst.segment !== 'data');
+      const textInstructions = instructions.filter(
+        (inst) => inst.segment !== "data",
+      );
 
       // 将汇编指令与机器码对应
       // 此处我们将使用展开后的伪指令作为assembly
@@ -433,18 +523,22 @@ export function AssemblyEditor() {
         return {
           ...inst,
           // 确保记录原始行号，用于正确的高亮显示
-          originalLineNumber: inst.originalLineNumber || -1
+          originalLineNumber: inst.originalLineNumber || -1,
         };
       });
 
       setAssembledInstructions(instructionsWithAssembly);
 
       // 找到指令内存节点并更新其数据
-      const instructionMemoryNode = nodes.find(node => node.type === 'instruction-memory');
+      const instructionMemoryNode = nodes.find(
+        (node) => node.type === "instruction-memory",
+      );
       if (instructionMemoryNode) {
         updateNodeData(instructionMemoryNode.id, {
-          instructions: instructionsWithAssembly.map((inst: { hex: string }) => inst.hex),
-          pc: 0
+          instructions: instructionsWithAssembly.map(
+            (inst: { hex: string }) => inst.hex,
+          ),
+          pc: 0,
         });
       }
     } catch (err) {
@@ -457,41 +551,60 @@ export function AssemblyEditor() {
       } else if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('汇编过程中发生未知错误');
+        setError("汇编过程中发生未知错误");
       }
     }
   };
 
   const loadTestProgram = async (programType: string) => {
     try {
-      const response = await fetch(`/test-programs/${programType}.s`);
+      const response = await fetch(
+        `${import.meta.env.BASE_URL}test-programs/${programType}.s`,
+      );
       const programText = await response.text();
       setEditorCode(programText);
     } catch (err) {
-      setError('加载示例程序失败');
+      setError("加载示例程序失败");
     }
   };
 
   // 转换标签到真实地址的函数
   const translateLabels = (assembly: string | undefined): string => {
-    if (!assembly) return '';
+    if (!assembly) return "";
 
     // 解析组装后的指令
     const parts = assembly.split(/[\s,]+/).filter(Boolean);
-    if (parts.length < 2) return assembly;  // 至少需要有指令和一个操作数
+    if (parts.length < 2) return assembly; // 至少需要有指令和一个操作数
 
     const op = parts[0].toLowerCase();
 
     // 跳转和分支指令列表
-    const branchInstructions = ['beq', 'bne', 'blt', 'bge', 'bltu', 'bgeu', 'beqz', 'bnez', 'blez', 'bgez', 'bltz', 'bgtz', 'bgt', 'ble', 'bgtu', 'bleu'];
-    const jumpInstructions = ['jal', 'j', 'call', 'tail'];
-    const loadAddressInstr = ['la'];
+    const branchInstructions = [
+      "beq",
+      "bne",
+      "blt",
+      "bge",
+      "bltu",
+      "bgeu",
+      "beqz",
+      "bnez",
+      "blez",
+      "bgez",
+      "bltz",
+      "bgtz",
+      "bgt",
+      "ble",
+      "bgtu",
+      "bleu",
+    ];
+    const jumpInstructions = ["jal", "j", "call", "tail"];
+    const loadAddressInstr = ["la"];
 
     let result = assembly;
 
     // 格式化地址为8位十六进制
     const formatAddress = (address: number): string => {
-      return `0x${address.toString(16).padStart(8, '0')}`;
+      return `0x${address.toString(16).padStart(8, "0")}`;
     };
 
     // 处理分支指令（最后一个操作数是标签）
@@ -522,7 +635,7 @@ export function AssemblyEditor() {
       }
     }
     // 处理jalr指令（可能含有偏移量和标签）
-    else if (op === 'jalr' && parts.length >= 3) {
+    else if (op === "jalr" && parts.length >= 3) {
       // jalr指令格式: jalr rd, offset(rs1)
       // 或简化形式: jalr rs1
       const lastPart = parts[parts.length - 1];
@@ -552,9 +665,9 @@ export function AssemblyEditor() {
               <button
                 type="button"
                 onClick={() => {
-                  const input = document.createElement('input');
-                  input.type = 'file';
-                  input.accept = '.txt,.s';
+                  const input = document.createElement("input");
+                  input.type = "file";
+                  input.accept = ".txt,.s";
                   input.onchange = (e) => {
                     const file = (e.target as HTMLInputElement).files?.[0];
                     if (file) {
@@ -576,11 +689,11 @@ export function AssemblyEditor() {
               <button
                 type="button"
                 onClick={() => {
-                  const blob = new Blob([editorCode], { type: 'text/plain' });
+                  const blob = new Blob([editorCode], { type: "text/plain" });
                   const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
+                  const a = document.createElement("a");
                   a.href = url;
-                  a.download = 'assembly_code.txt';
+                  a.download = "assembly_code.txt";
                   a.click();
                   URL.revokeObjectURL(url);
                 }}
@@ -596,7 +709,9 @@ export function AssemblyEditor() {
                 title="Load example RISC-V assembly program"
                 aria-label="Load example RISC-V assembly program"
               >
-                <option value="" disabled>Load Example Program</option>
+                <option value="" disabled>
+                  Load Example Program
+                </option>
 
                 {/* Algorithm Examples */}
                 <option value="bubble_sort">Bubble Sort</option>
@@ -610,8 +725,6 @@ export function AssemblyEditor() {
 
                 <option value="matrix_multiply">Matrix Multiplication</option>
                 <option value="string_operations">String Operations</option>
-
-
               </select>
               <button
                 type="button"
@@ -635,46 +748,56 @@ export function AssemblyEditor() {
             defaultLanguage="riscv"
             language="riscv"
             value={editorCode}
-            onChange={(value) => setEditorCode(value || '')}
+            onChange={(value) => setEditorCode(value || "")}
             theme="riscv-theme"
             options={{
               minimap: { enabled: false },
               fontSize: 14,
-              lineNumbers: 'on',
+              lineNumbers: "on",
               scrollBeyondLastLine: false,
-              wordWrap: 'on',
+              wordWrap: "on",
               automaticLayout: true,
               tabSize: 2,
-              renderWhitespace: 'all'
+              renderWhitespace: "all",
             }}
             onMount={handleEditorDidMount}
             beforeMount={(monaco) => {
-
               // Define the theme directly without checking if it exists
-              monaco.editor.defineTheme('riscv-theme', {
-                base: 'vs',
+              monaco.editor.defineTheme("riscv-theme", {
+                base: "vs",
                 inherit: true,
                 rules: [
-                    { token: 'comment', foreground: '777777', fontStyle: 'italic' },
-                    { token: 'label', foreground: '0000ff', fontStyle: 'bold' },
-                    { token: 'directive', foreground: '800080', fontStyle: 'bold' },
-                    { token: 'register', foreground: '000000' },
-                    { token: 'keyword', foreground: 'A52A2A', fontStyle: 'bold' },
-                    { token: 'keyword.pseudo', foreground: 'B8860B' },
-                    { token: 'identifier', foreground: '0000ff' }, // 变量名与标签颜色一致
-                    { token: 'relocation', foreground: 'D2691E', fontStyle: 'bold' }, // %hi and %lo operators
-                    { token: 'number.hex', foreground: '008000' },
-                    { token: 'number', foreground: '008000' },
-                    { token: 'string', foreground: 'ff0000' },
-                    { token: 'delimiter', foreground: '000000' },
+                  {
+                    token: "comment",
+                    foreground: "777777",
+                    fontStyle: "italic",
+                  },
+                  { token: "label", foreground: "0000ff", fontStyle: "bold" },
+                  {
+                    token: "directive",
+                    foreground: "800080",
+                    fontStyle: "bold",
+                  },
+                  { token: "register", foreground: "000000" },
+                  { token: "keyword", foreground: "A52A2A", fontStyle: "bold" },
+                  { token: "keyword.pseudo", foreground: "B8860B" },
+                  { token: "identifier", foreground: "0000ff" }, // 变量名与标签颜色一致
+                  {
+                    token: "relocation",
+                    foreground: "D2691E",
+                    fontStyle: "bold",
+                  }, // %hi and %lo operators
+                  { token: "number.hex", foreground: "008000" },
+                  { token: "number", foreground: "008000" },
+                  { token: "string", foreground: "ff0000" },
+                  { token: "delimiter", foreground: "000000" },
                 ],
                 colors: {
-                  'editor.foreground': '#000000',
-                  'editor.background': '#FFFFFF',
-                  'editor.lineHighlightBackground': '#F0F0F0',
-                }
+                  "editor.foreground": "#000000",
+                  "editor.background": "#FFFFFF",
+                  "editor.lineHighlightBackground": "#F0F0F0",
+                },
               });
-
             }}
           />
         </div>
@@ -696,12 +819,16 @@ export function AssemblyEditor() {
                   <button
                     type="button"
                     onClick={() => {
-                      const machineCode = assembledInstructions.map(inst => inst.hex).join('\n');
-                      const blob = new Blob([machineCode], { type: 'text/plain' });
+                      const machineCode = assembledInstructions
+                        .map((inst) => inst.hex)
+                        .join("\n");
+                      const blob = new Blob([machineCode], {
+                        type: "text/plain",
+                      });
                       const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
+                      const a = document.createElement("a");
                       a.href = url;
-                      a.download = 'machine_code.txt';
+                      a.download = "machine_code.txt";
                       a.click();
                       URL.revokeObjectURL(url);
                     }}
@@ -722,27 +849,41 @@ export function AssemblyEditor() {
               )}
             </div>
 
-            <div ref={tableBodyRef} className="overflow-auto h-[calc(100vh-9rem)] w-full border border-gray-200 rounded-lg shadow-sm">
+            <div
+              ref={tableBodyRef}
+              className="overflow-auto h-[calc(100vh-9rem)] w-full border border-gray-200 rounded-lg shadow-sm"
+            >
               <table className="w-full text-sm table-fixed border-collapse">
                 <thead className="bg-gray-50 sticky top-0 z-10 shadow-sm">
                   <tr>
-                    <th className="text-left py-2.5 px-3 font-medium w-24 whitespace-nowrap border-b border-gray-200">Address</th>
-                    <th className="text-left py-2.5 px-3 font-medium w-28 whitespace-nowrap border-b border-gray-200">Code</th>
-                    <th className="text-left py-2.5 px-3 font-medium w-48 whitespace-nowrap border-b border-gray-200">Basic</th>
-                    <th className="text-left py-2.5 px-3 font-medium whitespace-nowrap border-b border-gray-200">Source</th>
+                    <th className="text-left py-2.5 px-3 font-medium w-24 whitespace-nowrap border-b border-gray-200">
+                      Address
+                    </th>
+                    <th className="text-left py-2.5 px-3 font-medium w-28 whitespace-nowrap border-b border-gray-200">
+                      Code
+                    </th>
+                    <th className="text-left py-2.5 px-3 font-medium w-48 whitespace-nowrap border-b border-gray-200">
+                      Basic
+                    </th>
+                    <th className="text-left py-2.5 px-3 font-medium whitespace-nowrap border-b border-gray-200">
+                      Source
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {assembledInstructions.length > 0 ? (
                     assembledInstructions
-                      .filter(inst => inst.segment !== 'data') // 过滤掉数据段指令
+                      .filter((inst) => inst.segment !== "data") // 过滤掉数据段指令
                       .flatMap((inst, i) => {
                         // Get the address of the current instruction
-                        const address = inst.address !== undefined ? inst.address : i * 4;
+                        const address =
+                          inst.address !== undefined ? inst.address : i * 4;
 
                         // Find any labels that point to this address
                         const labelsAtAddress = Object.entries(labelMap)
-                          .filter(([_, labelAddress]) => labelAddress === address)
+                          .filter(
+                            ([_, labelAddress]) => labelAddress === address,
+                          )
                           .map(([label]) => label);
 
                         // Determine if we need to show a label
@@ -752,14 +893,17 @@ export function AssemblyEditor() {
 
                         // Add label row if needed
                         if (hasLabel) {
-                          labelsAtAddress.forEach(label => {
+                          labelsAtAddress.forEach((label) => {
                             result.push(
-                              <tr key={`${i}-label-${label}`} className="border-b-0 bg-red-100">
+                              <tr
+                                key={`${i}-label-${label}`}
+                                className="border-b-0 bg-red-100"
+                              >
                                 <td className="py-0.5 px-3 font-mono text-blue-600 text-xs font-bold whitespace-nowrap">
                                   {`<${label}>:`}
                                 </td>
                                 <td colSpan={3}></td>
-                              </tr>
+                              </tr>,
                             );
                           });
                         }
@@ -768,24 +912,34 @@ export function AssemblyEditor() {
                         result.push(
                           <tr
                             key={i}
-                            className={`${currentInstructionIndex * 4 === address ? 'bg-yellow-50 border border-yellow-200' : ''} transition-all duration-100`}
+                            className={`${currentInstructionIndex * 4 === address ? "bg-yellow-50 border border-yellow-200" : ""} transition-all duration-100`}
                             id={`instruction-row-${i}`}
                           >
                             <td className="py-2 px-3 font-mono text-gray-600 text-xs whitespace-nowrap overflow-hidden text-ellipsis">
-                              {`0x${address.toString(16).padStart(8, '0')}`}
+                              {`0x${address.toString(16).padStart(8, "0")}`}
                             </td>
-                            <td className="py-2 px-3 font-mono text-blue-600 text-xs whitespace-nowrap overflow-hidden text-ellipsis">{inst.hex}</td>
-                            <td className="py-2 px-3 font-mono text-xs whitespace-nowrap">{translateLabels(inst.assembly)}</td>
-                            <td className="py-2 px-3 font-mono text-gray-600 text-xs whitespace-nowrap overflow-hidden text-ellipsis">{inst.source}</td>
-                          </tr>
+                            <td className="py-2 px-3 font-mono text-blue-600 text-xs whitespace-nowrap overflow-hidden text-ellipsis">
+                              {inst.hex}
+                            </td>
+                            <td className="py-2 px-3 font-mono text-xs whitespace-nowrap">
+                              {translateLabels(inst.assembly)}
+                            </td>
+                            <td className="py-2 px-3 font-mono text-gray-600 text-xs whitespace-nowrap overflow-hidden text-ellipsis">
+                              {inst.source}
+                            </td>
+                          </tr>,
                         );
 
                         return result;
                       })
                   ) : (
                     <tr>
-                      <td colSpan={4} className="py-8 text-center text-gray-500">
-                        No assembly result. Please write code and click "Assemble Code"
+                      <td
+                        colSpan={4}
+                        className="py-8 text-center text-gray-500"
+                      >
+                        No assembly result. Please write code and click
+                        "Assemble Code"
                       </td>
                     </tr>
                   )}
